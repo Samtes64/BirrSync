@@ -13,27 +13,27 @@
 
 ```mermaid
 flowchart TD
-    subgraph Merchant Phone (flutter)
-        SMS[Telebirr SMS from 127 / CBE] --> TP[telephony / BroadcastReceiver]
-        TP --> BG[@pragma vm:entry-point\nBackground Handler]
-        FS[flutter_background_service\nSticky Persistent Notification] --- BG
-        BG --> LocalDB[(sqflite Local Queue)]
-        CU[Periodic Catch-Up Task\nScan Missed SMS] -.-> LocalDB
-        LocalDB --> Sync[HTTP Sync Worker\nHMAC-SHA256 Signer]
+    subgraph MP ["Merchant Phone (Flutter)"]
+        SMS["Telebirr SMS (127 / CBE)"] --> TP["telephony / BroadcastReceiver"]
+        TP --> BG["Background SMS Handler"]
+        FS["Persistent Foreground Service"] --- BG
+        BG --> LocalDB[("sqflite Local Queue")]
+        CU["Periodic Catch-Up Task"] -.-> LocalDB
+        LocalDB --> Sync["HTTP Sync Worker (HMAC-SHA256)"]
     end
 
-    subgraph Central Cloud Server (server)
-        Sync -->|POST /v1/gateway/ingest\nAnti-Replay Skew <= 120s| IngestAPI[Go Auth & HMAC Middleware]
-        IngestAPI --> DBCloud[(PostgreSQL 16)]
-        DBCloud --> VerifyAPI[POST /v1/payments/verify\nSELECT ... FOR UPDATE]
-        DBCloud --> WebhookEng[HMAC Webhook Dispatcher]
-        DBCloud --> TelegramBot[Instant Telegram Alert]
+    subgraph CS ["Central Cloud Server (Go)"]
+        Sync -->|"POST /v1/gateway/ingest"| IngestAPI["Auth & HMAC Middleware"]
+        IngestAPI --> DBCloud[("PostgreSQL 16")]
+        DBCloud --> VerifyAPI["POST /v1/payments/verify"]
+        DBCloud --> WebhookEng["HMAC Webhook Dispatcher"]
+        DBCloud --> TelegramBot["Telegram Push Notifier"]
     end
 
-    subgraph Consumer Clients
-        App1[Your Android/iOS Apps] -->|Atomic Verify| VerifyAPI
-        App2[Web Apps / SaaS] -->|Webhook Notifications| WebhookEng
-        TelegramBot -->|Instant Notification| Admin[Merchant Telegram Channel]
+    subgraph CC ["Consumer Clients"]
+        App1["Mobile Apps / Clients"] -->|"Verify Payment"| VerifyAPI
+        App2["Web Apps / Backend"] -->|"Webhook Events"| WebhookEng
+        TelegramBot -->|"Instant Alerts"| Admin["Merchant Telegram Channel"]
     end
 ```
 
