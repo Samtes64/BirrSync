@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: birrsync-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: birrsync
+    ports:
+      - "5432:5432"
+    volumes:
+      - birrsync-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d birrsync"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  gateway-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: birrsync-server
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://postgres:password@postgres:5432/birrsync?sslmode=disable"
+      DEFAULT_GATEWAY_ID: "gateway_agent_01"
+      DEFAULT_GATEWAY_SECRET: "birrsync_secret_live_key_2026"
+      ALLOWED_TIME_SKEW_SECS: "120"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:-}"
+      TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID:-}"
+
+volumes:
+  birrsync-pgdata:

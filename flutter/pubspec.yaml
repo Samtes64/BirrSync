@@ -1,0 +1,29 @@
+name: birrsync
+description: "Autonomous SMS Gateway Receiver for Telebirr & CBE - BirrSync"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  telephony: ^0.2.0
+  flutter_background_service: ^5.0.5
+  flutter_local_notifications: ^17.0.0
+  sqflite: ^2.3.0
+  path: ^1.9.0
+  crypto: ^3.0.3
+  http: ^1.2.0
+  shared_preferences: ^2.2.2
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
